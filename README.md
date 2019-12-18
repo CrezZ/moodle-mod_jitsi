@@ -16,3 +16,15 @@ This module allows creating jitsi-meet videoconference sessions. If you have a j
 Atention:
 - It is necessary to have a jitsi server (all-in-one doker with jitsi+token+JWT+moderator - https://github.com/CrezZ/docker-jitsi ).
 - The microphone and camera only work on https.
+
+
+TODO:
+
+- fullscreen button
+- mute all button (for teacher)
+- toggle all video (for teacher)
+- filter viewed participants (for students)
+- force teacher focus
+- auto toggle chat
+- save chat to moodle
+- add Jibri support for record all video
