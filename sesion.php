@@ -48,9 +48,51 @@ if (!has_capability('mod/jitsi:view', $context)) {
     notice(get_string('noviewpermission', 'jitsi'));
 }
 
+// CREATE JWT TOKEN for Jitsi
+
+$header = json_encode([
+  "kid" => "jitsi/custom_key_name",
+  "typ"=> "JWT",
+  "alg"=> "HS256"        // Hash HMAC
+]);
+$payload = $header = json_encode([
+  "context"=>[
+    "user"=> [
+      "avatar"=> $avatar,
+      "name"=> $nombre,
+      "email"=> "",
+      "id"=> "abcd:a1b2c3-d4e5f6-0abc1-23de-abcdef01fedcba" // only for internal usage
+    ],
+    "group"=> "a123-123-456-789"         // only for internal usage
+  ],
+  "aud"=> "jitsi",
+  "iss"=> $CFG->jitsi_app_id,            // Required - as JWT_APP_ID env
+  "sub"=> $CFG->jitsi_domain,            // Requied: as DOMAIN env
+  "room"=> "*",                          // restricted room name or * for all room
+  "exp"=> Date.now()+24*3600*1000,       // unix timestamp for expiration, for example 24 hours
+  "moderator" => true         // true/false for room moderator role
+]);
+$secret = $CFG->jitsi_secret;
+
+// Encode Header to Base64Url String
+$base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+
+// Encode Payload to Base64Url String
+$base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+
+// Create Signature Hash
+$signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, 'abC123!', true);
+
+// Encode Signature to Base64Url String
+$base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+
+// Create JWT
+$jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
+
 echo "<script src=\"https://meet.jit.si/external_api.js\"></script>\n";
 echo "<script>\n";
 echo "var domain = \"".$CFG->jitsi_domain."\";\n";
+echo "";
 echo "var options = {\n";
 echo "roomName: \"".$sesionnorm."\",\n";
 if ($CFG->branch < 36) {
@@ -60,7 +102,7 @@ if ($CFG->branch < 36) {
 }
 echo "width: '100%',\n";
 echo "height: 650,\n";
-echo "}\n";
+echo "jwt: '$jwt',}\n";
 echo "var api = new JitsiMeetExternalAPI(domain, options);\n";
 echo "api.executeCommand('displayName', '".$nombre."');\n";
 echo "api.executeCommand('toggleVideo');\n";

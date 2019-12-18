@@ -26,4 +26,6 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/jitsi/lib.php');
     $settings->add(new admin_setting_configtext('jitsi_domain', 'Domain', 'Domain Jitsi Server', 'meet.jit.si'));
+    $settings->add(new admin_setting_configtext('jitsi_secret', 'Secret', 'Secret for tokens Jitsi Server', 'my_token'));
+    $settings->add(new admin_setting_configtext('jitsi_app_id', 'APP_ID', 'APP_ID for tokens Jitsi Server', 'my_app'));
 }
